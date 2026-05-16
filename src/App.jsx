@@ -1,0 +1,2 @@
+import React,{useEffect,useState}from'react';import{AppProvider}from'./contexts/AppContext';import Home from'./pages/Home';import Admin from'./pages/Admin';
+export default function App(){const[ready,setReady]=useState(false);useEffect(()=>{const t=setTimeout(()=>setReady(true),1200);return()=>clearTimeout(t)},[]);return <AppProvider>{!ready&&<div className="splash"><div className="logoPulse">CP</div><h1>Casa de Papel</h1><p>Cargando sucursal digital...</p></div>}{ready&&(location.pathname.startsWith('/admin')?<Admin/>:<Home/>)}</AppProvider>}

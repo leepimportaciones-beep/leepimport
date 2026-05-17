@@ -71,7 +71,7 @@ function Pedidos(){
 function Presupuestador({p,detalles,onClose}){
   const a=useApp();
   const[estado,setEstado]=useState(p.estado);
-  const items=detalles.length?detalles.map(d=>({producto:d.nombre_producto,color:d.nombre_color,cantidad:d.cantidad,precio:d.precio_unitario_presupuestado||d.precio_base_original,subtotal:(d.precio_unitario_presupuestado||d.precio_base_original)*d.cantidad})):[];
+  const items=detalles.length?detalles.map(d=>({producto:d.nombre_producto,color:d.nombre_color,fancyColor:d.nombre_color,cantidad:d.cantidad,precio:d.precio_unitario_presupuestado||d.precio_base_original,subtotal:(d.precio_unitario_presupuestado||d.precio_base_original)*d.cantidad})):[];
   const total=items.reduce((s,i)=>s+i.subtotal,0);
 
   async function saveEstado(){
@@ -85,9 +85,21 @@ function Presupuestador({p,detalles,onClose}){
     onClose();
   }
 
+  const getFieldFromObs = (obs, fieldName) => {
+    if (!obs) return '';
+    const regex = new RegExp(`${fieldName}:\\s*(.*)`, 'i');
+    const match = obs.match(regex);
+    return match ? match[1].trim() : '';
+  };
+  
+  const email = p.email_cliente || getFieldFromObs(p.observaciones_cliente, 'Email');
+  const direccion = p.direccion_cliente || getFieldFromObs(p.observaciones_cliente, 'Dirección');
+  const localidad = p.localidad_cliente || getFieldFromObs(p.observaciones_cliente, 'Localidad');
+  const provincia = p.provincia_cliente || getFieldFromObs(p.observaciones_cliente, 'Provincia');
+
   const msg=`Presupuesto solicitado\nCódigo: ${p.codigo_pedido}\n\nHola ${p.nombre_cliente}, te paso el presupuesto:\n\n${items.map(i=>`Producto: ${i.producto}\nColor: ${i.color||'-'}\nCantidad: ${i.cantidad}\nPrecio unitario: $${i.precio}\nSubtotal: $${i.subtotal}`).join('\n\n')}\n\nTotal final: $${Math.round(total)}\n\nMuchas gracias.`;
 
-  return <div className="modal"><div className="panel wide"><h2>Presupuestador {p.codigo_pedido}</h2><div className="customerInfo"><div><strong>Cliente</strong><p>{p.nombre_cliente}</p></div><div><strong>Celular</strong><p>{p.telefono_cliente}</p></div><div><strong>Email</strong><p>{p.email_cliente||'-'}</p></div><div><strong>Dirección</strong><p>{p.direccion_cliente||'-'}</p></div><div><strong>Localidad</strong><p>{p.localidad_cliente||'-'}</p></div><div><strong>Provincia</strong><p>{p.provincia_cliente||'-'}</p></div>{p.observaciones_cliente&&<div className="fullWidth"><strong>Observaciones</strong><p>{p.observaciones_cliente}</p></div>}</div><label>Estado<select value={estado} onChange={e=>setEstado(e.target.value)}><option value="PENDIENTE_PRESUPUESTAR">PENDIENTE_PRESUPUESTAR</option><option value="PRESUPUESTADO">PRESUPUESTADO</option><option value="FINALIZADO">FINALIZADO</option><option value="VENTA_CONCRETADA">VENTA_CONCRETADA</option><option value="CANCELADO">CANCELADO</option></select></label>{items.length>0?items.map((it,idx)=><div className="budgetLine" key={idx}><span>{it.producto}</span><span>{it.color||'-'}</span><span>{it.cantidad} u.</span><span>$ {it.precio}</span><span>$ {it.subtotal}</span></div>):<p className="muted">No hay detalles disponibles para este pedido.</p>}<h2>Total: $ {Math.round(total).toLocaleString('es-AR')}</h2><textarea readOnly value={msg}/><div className="actions"><button onClick={onClose}>Cerrar</button><button className="danger" onClick={removePedido}>Eliminar pedido</button><button className="primary" onClick={saveEstado}>Guardar estado</button><button className="primary" onClick={()=>window.open(`https://wa.me/${p.telefono_cliente}?text=${encodeURIComponent(msg)}`,'_blank')}><MessageCircle size={16}/> WhatsApp</button></div></div></div>;
+  return <div className="modal"><div className="panel wide"><h2>Presupuestador {p.codigo_pedido}</h2><div className="customerInfo"><div><strong>Cliente</strong><p>{p.nombre_cliente}</p></div><div><strong>Celular</strong><p>{p.telefono_cliente}</p></div><div><strong>Email</strong><p>{email||'-'}</p></div><div><strong>Dirección</strong><p>{direccion||'-'}</p></div><div><strong>Localidad</strong><p>{localidad||'-'}</p></div><div><strong>Provincia</strong><p>{provincia||'-'}</p></div>{p.observaciones_cliente&&<div className="fullWidth"><strong>Observaciones</strong><p>{p.observaciones_cliente}</p></div>}</div><label>Estado<select value={estado} onChange={e=>setEstado(e.target.value)}><option value="PENDIENTE_PRESUPUESTAR">PENDIENTE_PRESUPUESTAR</option><option value="PRESUPUESTADO">PRESUPUESTADO</option><option value="FINALIZADO">FINALIZADO</option><option value="VENTA_CONCRETADA">VENTA_CONCRETADA</option><option value="CANCELADO">CANCELADO</option></select></label>{items.length>0?items.map((it,idx)=><div className="budgetLine" key={idx}><span>{it.producto}</span><span>{it.color||'-'}</span><span>{it.cantidad} u.</span><span>$ {it.precio}</span><span>$ {it.subtotal}</span></div>):<p className="muted">No hay detalles disponibles para este pedido.</p>}<h2>Total: $ {Math.round(total).toLocaleString('es-AR')}</h2><textarea readOnly value={msg}/><div className="actions"><button onClick={onClose}>Cerrar</button><button className="danger" onClick={removePedido}>Eliminar pedido</button><button className="primary" onClick={saveEstado}>Guardar estado</button><button className="primary" onClick={()=>window.open(`https://wa.me/${p.telefono_cliente}?text=${encodeURIComponent(msg)}`,'_blank')}><MessageCircle size={16}/> WhatsApp</button></div></div></div>;
 }
 
 function Crud({tipo}){

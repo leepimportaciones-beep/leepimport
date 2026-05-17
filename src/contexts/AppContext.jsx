@@ -300,7 +300,17 @@ export function AppProvider({children}){
     const totalBruto=cart.reduce((s,i)=>s+(i.precio_base||0)*i.cantidad,0);
     const codigo=`PED-${String(Date.now()).slice(-6)}`;
     const msg=buildClienteMsg(codigo,cliente,cart);
-    const pedido={codigo_pedido:codigo,nombre_cliente:cliente.nombre,telefono_cliente:cliente.telefono,email_cliente:cliente.email,direccion_cliente:cliente.direccion,provincia_cliente:cliente.provincia,localidad_cliente:cliente.localidad,observaciones_cliente:cliente.observaciones,estado:'PENDIENTE_PRESUPUESTAR',total_bruto:totalBruto,total_final:totalBruto,mensaje_whatsapp_cliente:msg};
+
+    let formattedObservaciones = cliente.observaciones || '';
+    if (cliente.email || cliente.direccion || cliente.localidad || cliente.provincia) {
+      formattedObservaciones += `\n\n--- Datos de Entrega/Contacto ---\n` +
+        (cliente.email ? `Email: ${cliente.email}\n` : '') +
+        (cliente.direccion ? `Dirección: ${cliente.direccion}\n` : '') +
+        (cliente.localidad ? `Localidad: ${cliente.localidad}\n` : '') +
+        (cliente.provincia ? `Provincia: ${cliente.provincia}\n` : '');
+    }
+
+    const pedido={codigo_pedido:codigo,nombre_cliente:cliente.nombre,telefono_cliente:cliente.telefono,email_cliente:cliente.email,direccion_cliente:cliente.direccion,provincia_cliente:cliente.provincia,localidad_cliente:cliente.localidad,observaciones_cliente:formattedObservaciones,estado:'PENDIENTE_PRESUPUESTAR',total_bruto:totalBruto,total_final:totalBruto,mensaje_whatsapp_cliente:msg};
     
     // Background async save to database (non-blocking)
     (async () => {
@@ -308,7 +318,9 @@ export function AppProvider({children}){
       let nuevoDetalle=[];
       try {
         if(supabaseConfigured){
-          const{data,error}=await supabase.from('pedidos').insert(pedido).select().single();
+          // Strip out fields not in Supabase schema
+          const { email_cliente, direccion_cliente, provincia_cliente, localidad_cliente, ...dbPedido } = pedido;
+          const{data,error}=await supabase.from('pedidos').insert(dbPedido).select().single();
           if(error)throw error;
           nuevoPedido=data;
           const detalles=cart.map(i=>({

@@ -480,7 +480,7 @@ function Checkout({ onClose }) {
   async function submit(e) {
     e.preventDefault();
     const r = await a.crearPedido(f);
-    const phone = import.meta.env.VITE_WHATSAPP_NUMBER || '5493816223292';
+    const phone = import.meta.env.VITE_WHATSAPP_NUMBER || '5493815542592';
     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(r.msg)}`, '_blank');
     onClose();
   }

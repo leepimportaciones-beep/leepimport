@@ -477,11 +477,11 @@ function Checkout({ onClose }) {
   });
   const total = a.cart.reduce((sum, i) => sum + (i.precio_base || 0) * i.cantidad, 0);
 
-  async function submit(e) {
+  function submit(e) {
     e.preventDefault();
-    const r = await a.crearPedido(f);
+    const r = a.crearPedido(f);
     const phone = import.meta.env.VITE_WHATSAPP_NUMBER || '5493815542592';
-    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(r.msg)}`, '_blank');
+    window.location.href = `https://wa.me/${phone}?text=${encodeURIComponent(r.msg)}`;
     onClose();
   }
 

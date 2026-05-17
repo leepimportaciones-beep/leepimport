@@ -1,4 +1,4 @@
-﻿import React,{createContext,useContext,useEffect,useState}from'react';
+import React,{createContext,useContext,useEffect,useState}from'react';
 import{supabase,supabaseConfigured}from'../lib/supabase';
 import{demoCategorias,demoSubcategorias,demoProductos,demoColores,demoProductoColores,demoProductoCaracteristicas,demoDetallePedidos,demoPedidos}from'../data/demoData';
 
@@ -296,59 +296,90 @@ export function AppProvider({children}){
     return '';
   }
 
-  async function crearPedido(cliente){
+  function crearPedido(cliente){
     const totalBruto=cart.reduce((s,i)=>s+(i.precio_base||0)*i.cantidad,0);
     const codigo=`PED-${String(Date.now()).slice(-6)}`;
     const msg=buildClienteMsg(codigo,cliente,cart);
     const pedido={codigo_pedido:codigo,nombre_cliente:cliente.nombre,telefono_cliente:cliente.telefono,email_cliente:cliente.email,direccion_cliente:cliente.direccion,provincia_cliente:cliente.provincia,localidad_cliente:cliente.localidad,observaciones_cliente:cliente.observaciones,estado:'PENDIENTE_PRESUPUESTAR',total_bruto:totalBruto,total_final:totalBruto,mensaje_whatsapp_cliente:msg};
-    let nuevoPedido;
-    let nuevoDetalle=[];
-    if(supabaseConfigured){
-      const{data,error}=await supabase.from('pedidos').insert(pedido).select().single();
-      if(error)throw error;
-      nuevoPedido=data;
-      const detalles=cart.map(i=>({
-        id_pedido:data.id_pedido,
-        id_producto:i.id_producto,
-        id_color:i.id_color,
-        nombre_categoria:i.categoria,
-        nombre_subcategoria:i.subcategoria,
-        nombre_producto:i.producto,
-        nombre_color:i.color,
-        cantidad:i.cantidad,
-        detalle_producto:i.detalle,
-        precio_base_original:i.precio_base,
-        precio_unitario_presupuestado:i.precio_base,
-        subtotal_bruto:(i.precio_base||0)*i.cantidad,
-        subtotal_final:(i.precio_base||0)*i.cantidad
-      }));
-      const{data:detailData,error:detailError}=await supabase.from('detalle_pedido').insert(detalles).select();
-      if(detailError)throw detailError;
-      nuevoDetalle=detailData||[];
-    }else{
-      const idPedido=newId();
-      nuevoPedido={...pedido,id_pedido:idPedido,fecha_alta:new Date().toISOString()};
-      nuevoDetalle=cart.map(i=>({
-        id_detalle_pedido:newId(),
-        id_pedido:idPedido,
-        id_producto:i.id_producto,
-        id_color:i.id_color,
-        nombre_categoria:i.categoria,
-        nombre_subcategoria:i.subcategoria,
-        nombre_producto:i.producto,
-        nombre_color:i.color,
-        cantidad:i.cantidad,
-        detalle_producto:i.detalle,
-        precio_base_original:i.precio_base,
-        precio_unitario_presupuestado:i.precio_base,
-        subtotal_bruto:(i.precio_base||0)*i.cantidad,
-        subtotal_final:(i.precio_base||0)*i.cantidad,
-        activo:true,
-        fecha_alta:new Date().toISOString()
-      }));
-    }
-    setPedidos(p=>[nuevoPedido,...p]);
-    setDetallePedidos(d=>[...nuevoDetalle,...d]);
+    
+    // Background async save to database (non-blocking)
+    (async () => {
+      let nuevoPedido;
+      let nuevoDetalle=[];
+      try {
+        if(supabaseConfigured){
+          const{data,error}=await supabase.from('pedidos').insert(pedido).select().single();
+          if(error)throw error;
+          nuevoPedido=data;
+          const detalles=cart.map(i=>({
+            id_pedido:data.id_pedido,
+            id_producto:i.id_producto,
+            id_color:i.id_color,
+            nombre_categoria:i.categoria,
+            nombre_subcategoria:i.subcategoria,
+            nombre_producto:i.producto,
+            nombre_color:i.color,
+            cantidad:i.cantidad,
+            detalle_producto:i.detalle,
+            precio_base_original:i.precio_base,
+            precio_unitario_presupuestado:i.precio_base,
+            subtotal_bruto:(i.precio_base||0)*i.cantidad,
+            subtotal_final:(i.precio_base||0)*i.cantidad
+          }));
+          const{data:detailData,error:detailError}=await supabase.from('detalle_pedido').insert(detalles).select();
+          if(detailError)throw detailError;
+          nuevoDetalle=detailData||[];
+        }else{
+          const idPedido=newId();
+          nuevoPedido={...pedido,id_pedido:idPedido,fecha_alta:new Date().toISOString()};
+          nuevoDetalle=cart.map(i=>({
+            id_detalle_pedido:newId(),
+            id_pedido:idPedido,
+            id_producto:i.id_producto,
+            id_color:i.id_color,
+            nombre_categoria:i.categoria,
+            nombre_subcategoria:i.subcategoria,
+            nombre_producto:i.producto,
+            nombre_color:i.color,
+            cantidad:i.cantidad,
+            detalle_producto:i.detalle,
+            precio_base_original:i.precio_base,
+            precio_unitario_presupuestado:i.precio_base,
+            subtotal_bruto:(i.precio_base||0)*i.cantidad,
+            subtotal_final:(i.precio_base||0)*i.cantidad,
+            activo:true,
+            fecha_alta:new Date().toISOString()
+          }));
+        }
+        setPedidos(p=>[nuevoPedido,...p]);
+        setDetallePedidos(d=>[...nuevoDetalle,...d]);
+      } catch (e) {
+        console.error("Error saving budget request in DB:", e);
+        const idPedido=newId();
+        nuevoPedido={...pedido,id_pedido:idPedido,fecha_alta:new Date().toISOString()};
+        nuevoDetalle=cart.map(i=>({
+          id_detalle_pedido:newId(),
+          id_pedido:idPedido,
+          id_producto:i.id_producto,
+          id_color:i.id_color,
+          nombre_categoria:i.categoria,
+          nombre_subcategoria:i.subcategoria,
+          nombre_producto:i.producto,
+          nombre_color:i.color,
+          cantidad:i.cantidad,
+          detalle_producto:i.detalle,
+          precio_base_original:i.precio_base,
+          precio_unitario_presupuestado:i.precio_base,
+          subtotal_bruto:(i.precio_base||0)*i.cantidad,
+          subtotal_final:(i.precio_base||0)*i.cantidad,
+          activo:true,
+          fecha_alta:new Date().toISOString()
+        }));
+        setPedidos(p=>[nuevoPedido,...p]);
+        setDetallePedidos(d=>[...nuevoDetalle,...d]);
+      }
+    })();
+
     clearCart();
     return{codigo,msg};
   }

@@ -288,6 +288,60 @@ export function AppProvider({children}){
       notify('Estado de pedido actualizado');
     }catch(e){console.error(e);notify('Error actualizando estado de pedido.','err');throw e;}}
 
+  async function guardarPresupuestoCompleto(idPedido, estado, lineasModificadas, totalFinal, msgWhatsapp){
+    try {
+      if(supabaseConfigured){
+        // 1. Update pedidos table
+        const { error: pedError } = await supabase.from('pedidos').update({
+          estado,
+          total_final: totalFinal,
+          mensaje_whatsapp_presupuesto: msgWhatsapp,
+          fecha_presupuestado: estado === 'PRESUPUESTADO' ? new Date().toISOString() : undefined,
+          fecha_finalizado: estado === 'FINALIZADO' ? new Date().toISOString() : undefined,
+          fecha_venta_concretada: estado === 'VENTA_CONCRETADA' ? new Date().toISOString() : undefined
+        }).eq('id_pedido', idPedido);
+        if(pedError) throw pedError;
+
+        // 2. Update each line item in detalle_pedido table
+        for (const line of lineasModificadas) {
+          if (line.id_detalle_pedido) {
+            const { error: detError } = await supabase.from('detalle_pedido').update({
+              precio_unitario_presupuestado: line.precio,
+              subtotal_final: line.subtotal
+            }).eq('id_detalle_pedido', line.id_detalle_pedido);
+            if(detError) throw detError;
+          }
+        }
+      }
+
+      // Update local states for real-time reactivity in UI!
+      setPedidos(prev => prev.map(p => p.id_pedido === idPedido ? {
+        ...p,
+        estado,
+        total_final: totalFinal,
+        mensaje_whatsapp_presupuesto: msgWhatsapp
+      } : p));
+
+      setDetallePedidos(prev => prev.map(d => {
+        const matchingLine = lineasModificadas.find(l => l.id_detalle_pedido === d.id_detalle_pedido);
+        if (matchingLine) {
+          return {
+            ...d,
+            precio_unitario_presupuestado: matchingLine.precio,
+            subtotal_final: matchingLine.subtotal
+          };
+        }
+        return d;
+      }));
+
+      notify('Presupuesto y precios guardados con éxito');
+    } catch(e) {
+      console.error(e);
+      notify('No se pudo guardar el presupuesto modificado.', 'err');
+      throw e;
+    }
+  }
+
   function hexToRgb(hex){
     if(!hex)return'';
     const v=hex.replace('#','');
@@ -397,10 +451,30 @@ export function AppProvider({children}){
   }
 
   function buildClienteMsg(codigo,c,items){
-    return `Solicitud de presupuesto\nCódigo: ${codigo}\n\nCliente:\nNombre: ${c.nombre}\nCelular: ${c.telefono}\nEmail: ${c.email || '-'}\nDirección: ${c.direccion || '-'}\nProvincia: ${c.provincia || '-'}\nLocalidad: ${c.localidad || '-'}\n\nDetalle:\n${items.map(i=>`\nCategoría: ${i.categoria}\nSubcategoría: ${i.subcategoria}\nProducto: ${i.producto}\n${i.color?`Color: ${i.color}\n`:''}Cantidad: ${i.cantidad}\nDetalle: ${i.detalle||'-'}`).join('\n')}\n\nObservaciones:\n${c.observaciones||'-'}\n\nQuedo atento al presupuesto. Muchas gracias.`;
+    const sep = "━━━━━━━━━━━━━━━━━━━━━";
+    const header = `🛍️  *LEEP IMPORTACIONES - NUEVO PEDIDO*`;
+    const details = items.map((i, idx) => {
+      return `📦 *PRODUCTO ${idx + 1}*\n` +
+             `  • *Item:* ${i.producto}\n` +
+             `  • *Categoría:* ${i.categoria} / ${i.subcategoria}\n` +
+             (i.color ? `  • *Color:* ${i.color}\n` : '') +
+             `  • *Cantidad:* ${i.cantidad} u.\n` +
+             (i.detalle ? `  • *Anotaciones:* _${i.detalle}_\n` : '');
+    }).join('\n');
+
+    return `${header}\n${sep}\n` +
+           `📑 *Código:* \`${codigo}\`\n\n` +
+           `👤 *DATOS DEL CLIENTE*\n` +
+           `  • *Nombre:* ${c.nombre}\n` +
+           `  • *Celular:* ${c.telefono}\n` +
+           `  • *Email:* ${c.email || '-'}\n` +
+           `  • *Entrega:* ${c.direccion || '-'}, ${c.localidad || '-'} (${c.provincia || '-'})\n\n` +
+           `🛒 *DETALLE DEL PEDIDO*\n${sep}\n${details}\n${sep}\n` +
+           `💬 *Observaciones:* _${c.observaciones || 'Ninguna'}_\n\n` +
+           `🙏 _Quedo a la espera del presupuesto formal. ¡Muchas gracias!_`;
   }
 
-  const value={loading,categorias,setCategorias,subcategorias,setSubcategorias,productos,setProductos,colores,setColores,productoColores,setProductoColores,productoCaracteristicas,setProductoCaracteristicas,detallePedidos,setDetallePedidos,pedidos,setPedidos,cart,addCart,updateQty,removeCart,clearCart,crearPedido,updatePedidoEstado,deletePedido,coloresProducto,getCat,getSub,getProduct,getColor,getProductoColor,getProductoCaracteristicas,notify,supabaseConfigured,saveCategoria,toggleCategoria,deleteCategoria,saveSubcategoria,toggleSubcategoria,deleteSubcategoria,saveProducto,toggleProducto,deleteProducto,saveColor,toggleColor,deleteColor,saveProductoColor,toggleProductoColor,deleteProductoColor,saveProductoCaracteristica,toggleProductoCaracteristica,deleteProductoCaracteristica};
+  const value={loading,categorias,setCategorias,subcategorias,setSubcategorias,productos,setProductos,colores,setColores,productoColores,setProductoColores,productoCaracteristicas,setProductoCaracteristicas,detallePedidos,setDetallePedidos,pedidos,setPedidos,cart,addCart,updateQty,removeCart,clearCart,crearPedido,updatePedidoEstado,guardarPresupuestoCompleto,deletePedido,coloresProducto,getCat,getSub,getProduct,getColor,getProductoColor,getProductoCaracteristicas,notify,supabaseConfigured,saveCategoria,toggleCategoria,deleteCategoria,saveSubcategoria,toggleSubcategoria,deleteSubcategoria,saveProducto,toggleProducto,deleteProducto,saveColor,toggleColor,deleteColor,saveProductoColor,toggleProductoColor,deleteProductoColor,saveProductoCaracteristica,toggleProductoCaracteristica,deleteProductoCaracteristica};
 
   return <C.Provider value={value}>{children}{toast&&<div className={'toast '+toast.t}>{toast.m}</div>}</C.Provider>;
 }

@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { Search, ShoppingCart, Trash2, Plus, Minus, Send, CheckCircle, Info, Sparkles, Layers, Box, Phone } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
+import { LeepLogo } from '../components/LeepLogo';
 
 export default function Home() {
   const a = useApp();
@@ -40,7 +41,9 @@ export default function Home() {
       <header className="hero">
         <nav>
           <a href="/" className="brandLogo">
-            <span>L</span>
+            <div className="logoWrapper">
+              <LeepLogo width={34} height={34} />
+            </div>
             <div>
               <strong>Leep Import</strong>
               <small>Presupuestos</small>
@@ -57,7 +60,7 @@ export default function Home() {
             <span>Ver pedido</span>
             {a.cart.length > 0 && (
               <span style={{
-                background: 'var(--accent-pink)',
+                background: 'var(--accent-purple)',
                 color: '#fff',
                 borderRadius: '50%',
                 width: '20px',
@@ -70,7 +73,7 @@ export default function Home() {
                 position: 'absolute',
                 top: '-8px',
                 right: '-8px',
-                boxShadow: '0 0 10px var(--accent-pink)'
+                boxShadow: '0 0 8px var(--accent-purple)'
               }}>
                 {a.cart.length}
               </span>
@@ -154,28 +157,29 @@ export default function Home() {
                 gridTemplateColumns: 'repeat(3, 1fr)',
                 gap: '12px',
                 width: '100%',
-                background: 'rgba(2, 2, 6, 0.4)',
+                background: 'rgba(255, 255, 255, 0.9)',
                 padding: '12px',
                 borderRadius: '16px',
-                border: '1px solid rgba(255, 255, 255, 0.05)'
+                border: '1px solid rgba(15, 23, 42, 0.05)',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.02)'
               }}>
                 <div>
                   <strong style={{ display: 'block', fontSize: '1.25rem', fontFamily: 'var(--font-mono)', color: 'var(--accent-cyan)' }}>
                     {a.productos.filter(p => p.activo !== false).length}
                   </strong>
-                  <span style={{ fontSize: '0.65rem', color: '#718096', textTransform: 'uppercase', fontWeight: 700 }}>Artículos</span>
+                  <span style={{ fontSize: '0.65rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 700 }}>Artículos</span>
                 </div>
                 <div>
                   <strong style={{ display: 'block', fontSize: '1.25rem', fontFamily: 'var(--font-mono)', color: 'var(--accent-purple)' }}>
                     {categorias.length}
                   </strong>
-                  <span style={{ fontSize: '0.65rem', color: '#718096', textTransform: 'uppercase', fontWeight: 700 }}>Rubros</span>
+                  <span style={{ fontSize: '0.65rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 700 }}>Rubros</span>
                 </div>
                 <div>
                   <strong style={{ display: 'block', fontSize: '1.25rem', fontFamily: 'var(--font-mono)', color: 'var(--accent-pink)' }}>
                     {a.cart.length}
                   </strong>
-                  <span style={{ fontSize: '0.65rem', color: '#718096', textTransform: 'uppercase', fontWeight: 700 }}>Pedido</span>
+                  <span style={{ fontSize: '0.65rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 700 }}>Pedido</span>
                 </div>
               </div>
               <div className="hologram-glow" />
@@ -191,7 +195,7 @@ export default function Home() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>
             <div>
               <h2 style={{ fontSize: '1.4rem' }}>Filtros de Catálogo</h2>
-              <p style={{ fontSize: '0.85rem' }}>Búsqueda reactiva de productos e insumos mayoristas</p>
+              <p style={{ fontSize: '0.85rem', color: '#64748b' }}>Búsqueda reactiva de productos e insumos mayoristas</p>
             </div>
             
             <div className="searchBar" style={{ width: '100%', maxWidth: '350px' }}>
@@ -205,7 +209,7 @@ export default function Home() {
           </div>
 
           <div>
-            <span style={{ display: 'block', fontSize: '0.72rem', fontFamily: 'var(--font-mono)', color: '#718096', textTransform: 'uppercase', marginBottom: '8px', fontWeight: 800 }}>
+            <span style={{ display: 'block', fontSize: '0.72rem', fontFamily: 'var(--font-mono)', color: '#64748b', textTransform: 'uppercase', marginBottom: '8px', fontWeight: 800 }}>
               Categoría Principal
             </span>
             <div className="categoryBar">
@@ -227,7 +231,7 @@ export default function Home() {
 
           {cat && subcategorias.length > 0 && (
             <div>
-              <span style={{ display: 'block', fontSize: '0.72rem', fontFamily: 'var(--font-mono)', color: '#718096', textTransform: 'uppercase', marginBottom: '8px', fontWeight: 800 }}>
+              <span style={{ display: 'block', fontSize: '0.72rem', fontFamily: 'var(--font-mono)', color: '#64748b', textTransform: 'uppercase', marginBottom: '8px', fontWeight: 800 }}>
                 Subcategoría / Subrubro
               </span>
               <div className="subCategoryBar">
@@ -258,7 +262,7 @@ export default function Home() {
           <div className="emptyState">
             <Info size={36} style={{ color: 'var(--accent-purple)', marginBottom: '14px', animation: 'floatMascot 2s infinite' }} />
             <h3>No se encontraron productos</h3>
-            <p style={{ marginTop: '6px', fontSize: '0.9rem' }}>
+            <p style={{ marginTop: '6px', fontSize: '0.9rem', color: '#64748b' }}>
               No hay coincidencias con los filtros activos. Intentá buscar otro término o cambiar de rubro.
             </p>
           </div>
@@ -330,7 +334,7 @@ function ProductCard({ p }) {
 
         {p.usa_colores && colors.length > 0 && (
           <div style={{ marginBottom: '14px' }}>
-            <span style={{ display: 'block', fontSize: '0.65rem', fontFamily: 'var(--font-mono)', color: '#718096', textTransform: 'uppercase', marginBottom: '6px', fontWeight: 800 }}>
+            <span style={{ display: 'block', fontSize: '0.65rem', fontFamily: 'var(--font-mono)', color: '#64748b', textTransform: 'uppercase', marginBottom: '6px', fontWeight: 800 }}>
               Variante de Color
             </span>
             <div className="colorList">
@@ -350,7 +354,7 @@ function ProductCard({ p }) {
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', gap: '14px', flexWrap: 'wrap' }}>
           <div>
-            <span style={{ display: 'block', fontSize: '0.65rem', fontFamily: 'var(--font-mono)', color: '#718096', textTransform: 'uppercase', fontWeight: 800 }}>
+            <span style={{ display: 'block', fontSize: '0.65rem', fontFamily: 'var(--font-mono)', color: '#64748b', textTransform: 'uppercase', fontWeight: 800 }}>
               Precio Base
             </span>
             <p className="price">
@@ -374,7 +378,6 @@ function ProductCard({ p }) {
           className="primary" 
           onClick={() => {
             a.addCart(p, p.usa_colores ? selectedColor : null, qty, precio);
-            // Quick visual toast or positive feedback could go here
           }}
           style={{ marginTop: '16px' }}
         >
@@ -406,7 +409,7 @@ function CartModal({ onClose, onCheckout }) {
           <div className="emptyState" style={{ margin: '24px 28px' }}>
             <ShoppingCart size={32} style={{ color: 'var(--accent-purple)', marginBottom: '10px' }} />
             <h3>No tenés productos cargados</h3>
-            <p style={{ fontSize: '0.85rem', marginTop: '4px' }}>
+            <p style={{ fontSize: '0.85rem', marginTop: '4px', color: '#64748b' }}>
               Agregá productos desde el catálogo para generar tu cotización.
             </p>
           </div>
@@ -429,8 +432,8 @@ function CartModal({ onClose, onCheckout }) {
                         padding: '4px 10px', 
                         fontSize: '11px', 
                         color: 'var(--accent-pink)',
-                        border: '1px solid rgba(255, 0, 127, 0.2)',
-                        background: 'rgba(255, 0, 127, 0.05)',
+                        border: '1px solid rgba(219, 39, 119, 0.2)',
+                        background: 'rgba(219, 39, 119, 0.05)',
                         borderRadius: '6px'
                       }}
                     >
@@ -477,7 +480,7 @@ function Checkout({ onClose }) {
   async function submit(e) {
     e.preventDefault();
     const r = await a.crearPedido(f);
-    const phone = import.meta.env.VITE_WHATSAPP_NUMBER || '5493816223292'; // fallback or env
+    const phone = import.meta.env.VITE_WHATSAPP_NUMBER || '5493816223292';
     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(r.msg)}`, '_blank');
     onClose();
   }
@@ -487,7 +490,7 @@ function Checkout({ onClose }) {
       <form className="panel" onSubmit={submit}>
         <div>
           <h2>Finalizar Solicitud</h2>
-          <p style={{ color: '#718096', fontSize: '0.88rem', marginTop: '4px' }}>
+          <p style={{ color: '#64748b', fontSize: '0.88rem', marginTop: '4px' }}>
             Completá tus datos de contacto para guardar el pedido y abrir WhatsApp.
           </p>
         </div>

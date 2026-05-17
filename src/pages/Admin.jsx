@@ -1,7 +1,8 @@
-﻿import React,{useState,useEffect}from'react';
+import React,{useState,useEffect}from'react';
 import{BarChart3,Box,FolderTree,Layers,Palette,Receipt,Settings,ShoppingBag,LogOut,MessageCircle}from'lucide-react';
 import{BarChart,Bar,XAxis,YAxis,Tooltip,ResponsiveContainer}from'recharts';
 import{useApp}from'../contexts/AppContext';
+import { LeepLogo } from '../components/LeepLogo';
 
 const menu=[
   ['dashboard','Dashboard',BarChart3],
@@ -22,7 +23,7 @@ export default function Admin(){
 
   if(!auth)return <Login onOk={()=>{localStorage.setItem('adminAuth','1');setAuth(true)}}/>;
 
-  return <div className="admin"><aside className="sidebar"><h2>Backoffice</h2><div className="brandBlock"><span>L</span><div><strong>Leep Import</strong><small>S.R.L.</small></div></div>{menu.map(([id,t,Icon])=><button key={id} className={tab===id?'active':''} onClick={()=>setTab(id)}><Icon size={18}/>{t}</button>)}<button onClick={()=>{localStorage.removeItem('adminAuth');setAuth(false)}}><LogOut size={18}/>Salir</button></aside><main className="adminMain">{tab==='dashboard'&&<Dashboard/>}{tab==='pedidos'&&<Pedidos/>}{tab==='categorias'&&<Crud tipo="categorias"/>}{tab==='subcategorias'&&<Crud tipo="subcategorias"/>}{tab==='productos'&&<Productos/>}{tab==='colores'&&<Colores/>}{tab==='producto_colores'&&<ProductoColores/>}{tab==='producto_caracteristicas'&&<ProductoCaracteristicas/>}{tab==='ventas'&&<Ventas/>}{tab==='config'&&<Config/>}</main></div>;
+  return <div className="admin"><aside className="sidebar"><h2>Backoffice</h2><div className="brandBlock"><div className="logoWrapper"><LeepLogo width={28} height={28} /></div><div><strong>Leep Import</strong><small>S.R.L.</small></div></div>{menu.map(([id,t,Icon])=><button key={id} className={tab===id?'active':''} onClick={()=>setTab(id)}><Icon size={18}/>{t}</button>)}<button onClick={()=>{localStorage.removeItem('adminAuth');setAuth(false)}}><LogOut size={18}/>Salir</button></aside><main className="adminMain">{tab==='dashboard'&&<Dashboard/>}{tab==='pedidos'&&<Pedidos/>}{tab==='categorias'&&<Crud tipo="categorias"/>}{tab==='subcategorias'&&<Crud tipo="subcategorias"/>}{tab==='productos'&&<Productos/>}{tab==='colores'&&<Colores/>}{tab==='producto_colores'&&<ProductoColores/>}{tab==='producto_caracteristicas'&&<ProductoCaracteristicas/>}{tab==='ventas'&&<Ventas/>}{tab==='config'&&<Config/>}</main></div>;
 }
 
 function Login({onOk}){
@@ -36,7 +37,7 @@ function Login({onOk}){
     else setE('Usuario o clave incorrectos');
   }
 
-  return <div className="login"><form onSubmit={go} className="panel loginBox"><div className="logoPulse small">L</div><h1>Leep Import Admin</h1><input value={u} onChange={e=>setU(e.target.value)} placeholder="Usuario"/><input type="password" value={p} onChange={e=>setP(e.target.value)} placeholder="Clave"/>{e&&<p className="error">{e}</p>}<button className="primary">Entrar</button></form></div>;
+  return <div className="login"><form onSubmit={go} className="panel loginBox"><div className="logoPulse" style={{ width: '64px', height: '64px', margin: '0 auto 20px', background: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '18px', boxShadow: '0 8px 25px rgba(0,0,0,0.05)' }}><LeepLogo width={40} height={40} /></div><h1>Leep Import Admin</h1><input value={u} onChange={e=>setU(e.target.value)} placeholder="Usuario"/><input type="password" value={p} onChange={e=>setP(e.target.value)} placeholder="Clave"/>{e&&<p className="error">{e}</p>}<button className="primary">Entrar</button></form></div>;
 }
 
 function Dashboard(){
@@ -198,7 +199,7 @@ function Colores(){
     }catch{}
   }
 
-  return <><h1>Colores</h1><div className="adminGrid"><div className="card"><h3>{active?'Editar color':'Nuevo color'}</h3><form onSubmit={save} className="formStack"><label>Nombre<input value={form.nombre} onChange={e=>setForm({...form,nombre:e.target.value})} required/></label><label>Código HEX<input value={form.codigo_hex} onChange={e=>setForm({...form,codigo_hex:e.target.value})} required/></label><label>Activo<select value={form.activo?1:0} onChange={e=>setForm({...form,activo:e.target.value==='1'})}><option value={1}>Sí</option><option value={0}>No</option></select></label><div className="actions"><button type="submit" className="primary">Guardar</button><button type="button" onClick={()=>{setActive(null);setForm({id_color:null,nombre:'',codigo_hex:'#ffffff',activo:true})}}>Limpiar</button></div></form></div><div className="card"><h3>Paleta de colores</h3><div className="colorAdmin">{a.colores.map(c=><div className="colorBox" key={c.id_color}><i style={{background:c.codigo_hex}}/><div><b>{c.nombre}</b><small>{c.codigo_hex}</small></div><div className="colorActions"><button onClick={()=>edit(c)}>Editar</button><button onClick={()=>a.toggleColor(c.id_color,c.activo===false)}>{c.activo!==false?'Desactivar':'Activar'}</button><button onClick={()=>remove(c)}>Eliminar</button></div></div>)}</div></div></div></>;
+  return <><h1>Colores</h1><p className="muted">Administra los colores globales del catálogo escolar y librería, asignando códigos hexadecimales y nombres descriptivos.</p><div className="adminGrid"><div className="card"><h3>{active?'Editar color':'Nuevo color'}</h3><form onSubmit={save} className="formStack"><label>Nombre del Color<input value={form.nombre} onChange={e=>setForm({...form,nombre:e.target.value})} placeholder="Ej. Azul LEEP" required/></label><label>Selección de Color & HEX<div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}><input type="color" value={form.codigo_hex || '#ffffff'} onChange={e=>setForm({...form,codigo_hex:e.target.value})} style={{ width: '45px', height: '42px', padding: '0', border: '1px solid rgba(15,23,42,0.1)', borderRadius: '8px', cursor: 'pointer', background: 'none' }} /><input value={form.codigo_hex} onChange={e=>setForm({...form,codigo_hex:e.target.value})} placeholder="#ffffff" required style={{ flex: 1 }} /></div></label><label>Activo<select value={form.activo?1:0} onChange={e=>setForm({...form,activo:e.target.value==='1'})}><option value={1}>Sí</option><option value={0}>No</option></select></label><div className="actions"><button type="submit" className="primary">Guardar</button><button type="button" onClick={()=>{setActive(null);setForm({id_color:null,nombre:'',codigo_hex:'#ffffff',activo:true})}}>Limpiar</button></div></form></div><div className="card"><h3>Paleta de colores</h3><div className="colorAdmin">{a.colores.map(c=><div className="colorBox" key={c.id_color}><i style={{background:c.codigo_hex}}/><div><b>{c.nombre}</b><small>{c.codigo_hex}</small></div><div className="colorActions"><button onClick={()=>edit(c)}>Editar</button><button onClick={()=>a.toggleColor(c.id_color,c.activo===false)}>{c.activo!==false?'Desactivar':'Activar'}</button><button onClick={()=>remove(c)}>Eliminar</button></div></div>)}</div></div></div></>;
 }
 
 function ProductoColores(){
